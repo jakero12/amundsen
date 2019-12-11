@@ -54,6 +54,7 @@ class HiveTableMetadataExtractor(Extractor):
     ) source
     ORDER by tbl_id, is_partition_col desc;
     """
+
     # CONFIG KEYS
     WHERE_CLAUSE_SUFFIX_KEY = 'where_clause_suffix'
     CLUSTER_KEY = 'cluster'
