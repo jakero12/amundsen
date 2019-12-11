@@ -37,18 +37,23 @@ class HiveTableMetadataExtractor(Extractor):
     {where_clause_suffix}
     UNION
     SELECT t.TBL_ID, d.NAME as schema_name, t.TBL_NAME name, t.TBL_TYPE, tp.PARAM_VALUE as description,
-           c.COLUMN_NAME as col_name, c.INTEGER_IDX as col_sort_order,
+           c.COLUMN_NAME as col_name, p.PARTITION_OFFST_IDX+c.INTEGER_IDX as col_sort_order,
            c.TYPE_NAME as col_type, c.COMMENT as col_description, 0 as "is_partition_col"
     FROM TBLS t
     JOIN DBS d ON t.DB_ID = d.DB_ID
     JOIN SDS s ON t.SD_ID = s.SD_ID
     JOIN COLUMNS_V2 c ON s.CD_ID = c.CD_ID
     LEFT JOIN TABLE_PARAMS tp ON (t.TBL_ID = tp.TBL_ID AND tp.PARAM_KEY='comment')
+    LEFT JOIN (
+		SELECT TBL_ID,COUNT(1) as PARTITION_OFFST_IDX
+		FROM PARTITION_KEYS
+		GROUP BY TBL_ID
+    ) as p
+    ON t.tbl_id=p.tbl_id
     {where_clause_suffix}
     ) source
     ORDER by tbl_id, is_partition_col desc;
     """
-
     # CONFIG KEYS
     WHERE_CLAUSE_SUFFIX_KEY = 'where_clause_suffix'
     CLUSTER_KEY = 'cluster'
